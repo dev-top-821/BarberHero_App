@@ -1,0 +1,13 @@
+name: api_client
+description: Shared API client for BarberHero apps
+version: 0.0.1
+publish_to: none
+
+environment:
+  sdk: ^3.9.0
+
+dependencies:
+  dio: ^5.7.0
+  shared_preferences: ^2.3.0
+  shared_models:
+    path: ../shared_models

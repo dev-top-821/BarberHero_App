@@ -1,0 +1,9 @@
+name: barberhero_mobile
+
+packages:
+  - apps/*
+  - packages/*
+
+command:
+  bootstrap:
+    usePubspecOverrides: true
