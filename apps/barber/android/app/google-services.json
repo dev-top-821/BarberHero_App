@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "233553246142",
+    "project_id": "barberhero-43d74",
+    "storage_bucket": "barberhero-43d74.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:233553246142:android:2a405d4d017abd0674abef",
+        "android_client_info": {
+          "package_name": "com.barberhero.barberhero_barber"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB10cEILNLWFWZcnG10TPQh9zFPJnbn0zA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:233553246142:android:02851b0e794b0ecf74abef",
+        "android_client_info": {
+          "package_name": "com.barberhero.barberhero_customer"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB10cEILNLWFWZcnG10TPQh9zFPJnbn0zA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
