@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:api_client/api_client.dart';
+import 'package:provider/provider.dart';
 import '../config/theme.dart';
+import '../providers/auth_provider.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -20,11 +21,36 @@ class _SplashScreenState extends State<SplashScreen> {
     await Future.delayed(const Duration(seconds: 2));
     if (!mounted) return;
 
-    final hasToken = await AuthInterceptor.hasToken();
-    if (hasToken) {
-      Navigator.pushReplacementNamed(context, '/dashboard');
-    } else {
+    final auth = context.read<AuthProvider>();
+    final isLoggedIn = await auth.checkAuth();
+
+    if (!mounted) return;
+
+    if (!isLoggedIn) {
       Navigator.pushReplacementNamed(context, '/login');
+      return;
+    }
+
+    // Route by barber onboarding/approval status. `barberStatus` comes
+    // from /users/me on checkAuth — BLOCKED falls through to /pending
+    // so we don't tip the user off mid-moderation.
+    switch (auth.barberStatus) {
+      case 'INCOMPLETE':
+        Navigator.pushReplacementNamed(context, '/onboarding');
+        return;
+      case 'PENDING':
+        Navigator.pushReplacementNamed(context, '/pending');
+        return;
+      case 'REJECTED':
+        Navigator.pushReplacementNamed(context, '/rejected');
+        return;
+      case 'APPROVED':
+        Navigator.pushReplacementNamed(context, '/dashboard');
+        return;
+      default:
+        // BLOCKED or unknown — keep them on the pending screen so any
+        // support communication is unified.
+        Navigator.pushReplacementNamed(context, '/pending');
     }
   }
 
@@ -36,8 +62,10 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // TODO: Replace with actual logo asset
-            Icon(Icons.content_cut, size: 80, color: Colors.white),
+            Image.asset(
+              'assets/images/logo.png',
+              height: 100,
+            ),
             const SizedBox(height: 16),
             const Text(
               'BARBERHERO PRO',
