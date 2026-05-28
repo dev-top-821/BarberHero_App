@@ -40,6 +40,10 @@ BarberProfileSummary _$BarberProfileSummaryFromJson(
   id: json['id'] as String,
   status: json['status'] as String,
   isOnline: json['isOnline'] as bool?,
+  rejectionReason: json['rejectionReason'] as String?,
+  submittedAt: json['submittedAt'] == null
+      ? null
+      : DateTime.parse(json['submittedAt'] as String),
 );
 
 Map<String, dynamic> _$BarberProfileSummaryToJson(
@@ -48,4 +52,6 @@ Map<String, dynamic> _$BarberProfileSummaryToJson(
   'id': instance.id,
   'status': instance.status,
   'isOnline': instance.isOnline,
+  'rejectionReason': instance.rejectionReason,
+  'submittedAt': instance.submittedAt?.toIso8601String(),
 };

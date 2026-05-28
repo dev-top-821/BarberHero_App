@@ -11,3 +11,9 @@ dependencies:
   shared_preferences: ^2.3.0
   shared_models:
     path: ../shared_models
+
+  # Real-time chat: Firestore for live message + room snapshots, Firebase Auth
+  # for client identity (custom token minted by /users/me/firebase-token).
+  firebase_core: ^3.12.0
+  firebase_auth: ^5.4.0
+  cloud_firestore: ^5.6.0

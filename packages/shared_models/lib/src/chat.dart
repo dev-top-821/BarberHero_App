@@ -9,6 +9,12 @@ class ChatRoom {
   final ChatParticipant? customer;
   final ChatParticipant? barber;
   final ChatMessage? lastMessage;
+  // Count of messages authored by the other party since the current user
+  // last opened this room.
+  final int? unreadCount;
+  // The peer's last-read timestamp — used on the conversation screen to
+  // render "Seen" markers on messages the current user has sent.
+  final DateTime? peerLastReadAt;
   final DateTime? createdAt;
 
   ChatRoom({
@@ -17,6 +23,8 @@ class ChatRoom {
     this.customer,
     this.barber,
     this.lastMessage,
+    this.unreadCount,
+    this.peerLastReadAt,
     this.createdAt,
   });
 

@@ -1,9 +1,12 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthInterceptor extends Interceptor {
   static const _accessTokenKey = 'access_token';
   static const _refreshTokenKey = 'refresh_token';
+  static const _cachedUserKey = 'cached_user';
 
   final Dio _dio;
 
@@ -66,6 +69,7 @@ class AuthInterceptor extends Interceptor {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_accessTokenKey);
     await prefs.remove(_refreshTokenKey);
+    await prefs.remove(_cachedUserKey);
   }
 
   static Future<String?> getAccessToken() async {
@@ -76,5 +80,25 @@ class AuthInterceptor extends Interceptor {
   static Future<bool> hasToken() async {
     final token = await getAccessToken();
     return token != null;
+  }
+
+  /// Cache the serialized user so the next launch can render a signed-in UI
+  /// immediately — even before /users/me returns (or when it can't, e.g. the
+  /// device is offline). Call on every successful login/register/getMe.
+  static Future<void> saveCachedUser(Map<String, dynamic> userJson) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_cachedUserKey, jsonEncode(userJson));
+  }
+
+  /// Returns the last known user JSON, or null if nothing cached.
+  static Future<Map<String, dynamic>?> loadCachedUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_cachedUserKey);
+    if (raw == null) return null;
+    try {
+      return jsonDecode(raw) as Map<String, dynamic>;
+    } catch (_) {
+      return null;
+    }
   }
 }

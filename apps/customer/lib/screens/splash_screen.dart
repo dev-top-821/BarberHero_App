@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:api_client/api_client.dart';
+import 'package:provider/provider.dart';
 import '../config/theme.dart';
+import '../providers/auth_provider.dart';
+import '../providers/location_provider.dart';
+import '../services/app_mode.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -16,15 +19,44 @@ class _SplashScreenState extends State<SplashScreen> {
     _navigate();
   }
 
+  Future<void> _goLocationOrHome() async {
+    final location = context.read<LocationProvider>();
+    final hasLocation = await location.loadSavedLocation();
+    if (!mounted) return;
+    Navigator.pushReplacementNamed(context, hasLocation ? '/home' : '/location');
+  }
+
   Future<void> _navigate() async {
     await Future.delayed(const Duration(seconds: 2));
     if (!mounted) return;
 
-    final hasToken = await AuthInterceptor.hasToken();
-    if (hasToken) {
-      Navigator.pushReplacementNamed(context, '/home');
-    } else {
-      Navigator.pushReplacementNamed(context, '/login');
+    final mode = await AppModeService.load();
+    if (!mounted) return;
+
+    switch (mode) {
+      case AppMode.firstRun:
+        // Brand-new device — offer all three entry points.
+        Navigator.pushReplacementNamed(context, '/welcome');
+        return;
+
+      case AppMode.guest:
+        // Guest once, guest on every cold start — straight into the app.
+        // Booking wall will trigger on /payment for unauthenticated users.
+        await _goLocationOrHome();
+        return;
+
+      case AppMode.account:
+        // Device has been through an account at some point. Try the token;
+        // fall back to login (never Welcome — guest is revoked).
+        final auth = context.read<AuthProvider>();
+        final isLoggedIn = await auth.checkAuth();
+        if (!mounted) return;
+        if (isLoggedIn) {
+          await _goLocationOrHome();
+        } else {
+          Navigator.pushReplacementNamed(context, '/login');
+        }
+        return;
     }
   }
 
@@ -36,8 +68,10 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // TODO: Replace with actual logo asset
-            Icon(Icons.content_cut, size: 80, color: Colors.white),
+            Image.asset(
+              'assets/images/logo.png',
+              height: 100,
+            ),
             const SizedBox(height: 16),
             const Text(
               'BARBERHERO',

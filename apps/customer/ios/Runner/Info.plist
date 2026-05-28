@@ -22,6 +22,12 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>BarberHero uses your location to find barbers near you and show them on the map.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>BarberHero needs camera access so you can take a photo for your profile or attach one to a support report.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>BarberHero needs photo library access so you can choose a profile photo or attach images to a support report.</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

@@ -8,3 +8,5 @@ export 'src/service.dart';
 export 'src/booking.dart';
 export 'src/chat.dart';
 export 'src/wallet.dart';
+export 'src/review.dart';
+export 'src/legal.dart';

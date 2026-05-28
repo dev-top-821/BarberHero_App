@@ -20,8 +20,10 @@ dependencies:
   # State management
   provider: ^6.1.0
 
-  # Maps
-  google_maps_flutter: ^2.10.0
+  # Maps (OSM + MapTiler)
+  flutter_map: ^8.2.0
+  flutter_map_location_marker: ^10.0.2
+  latlong2: ^0.9.0
 
   # Payments
   flutter_stripe: ^11.4.0
@@ -31,21 +33,47 @@ dependencies:
   firebase_messaging: ^15.2.0
   flutter_local_notifications: ^18.0.0
 
+  # Real-time chat
+  firebase_auth: ^5.4.0
+  cloud_firestore: ^5.6.0
+
   # Storage
   shared_preferences: ^2.3.0
 
   # Location
   geolocator: ^13.0.2
-  geocoding: ^3.0.0
 
   # Image
   image_picker: ^1.1.0
   cached_network_image: ^3.4.0
+  flutter_dotenv: ^6.0.0
+
+  # Launch tel: URIs for the (unmasked) direct-dial that becomes
+  # available once the barber is ON_THE_WAY.
+  url_launcher: ^6.3.0
+
+  # Markdown rendering for in-app Terms & Conditions / Privacy Policy
+  # (the lawyer-supplied wording lives in assets/legal/*.md).
+  flutter_markdown: ^0.7.7+1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.1
 
 flutter:
   uses-material-design: true
+  assets:
+    - .env
+    - assets/images/
+    - assets/legal/
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  image_path: "assets/images/launcher_icon.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/images/launcher_icon.png"

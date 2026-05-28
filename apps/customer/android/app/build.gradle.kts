@@ -37,8 +37,15 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
-            isMinifyEnabled = true
-            isShrinkResources = true
+            // R8 was stripping Flutter plugin classes that the
+            // image-loading chain (cached_network_image →
+            // flutter_cache_manager → sqflite/path_provider) relies on
+            // at runtime, causing all network images to silently fail
+            // in release. Disabled until a comprehensive set of -keep
+            // rules is added to proguard-rules.pro. Shrink-resources
+            // requires minify, so it goes off too.
+            isMinifyEnabled = false
+            isShrinkResources = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

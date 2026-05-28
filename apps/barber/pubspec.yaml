@@ -44,6 +44,10 @@ dependencies:
   # available once the barber is ON_THE_WAY.
   url_launcher: ^6.3.0
 
+  # Markdown rendering for in-app Terms & Conditions / Privacy Policy
+  # (the lawyer-supplied wording lives in assets/legal/*.md).
+  flutter_markdown: ^0.7.7+1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -55,6 +59,7 @@ flutter:
   assets:
     - .env
     - assets/images/
+    - assets/legal/
 
 flutter_launcher_icons:
   android: true

@@ -27,7 +27,7 @@ class PhotoUploader {
   Future<MultipartFile> _toMultipart(File file) async {
     final bytes = await file.readAsBytes();
     _guardSize(bytes.lengthInBytes);
-    return MultipartFile.fromBytes(
+    return imageMultipartFromBytes(
       bytes,
       filename: _filename(file.path),
     );

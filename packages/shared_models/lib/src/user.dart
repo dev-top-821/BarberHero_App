@@ -34,11 +34,15 @@ class BarberProfileSummary {
   final String id;
   final String status;
   final bool? isOnline;
+  final String? rejectionReason;
+  final DateTime? submittedAt;
 
   BarberProfileSummary({
     required this.id,
     required this.status,
     this.isOnline,
+    this.rejectionReason,
+    this.submittedAt,
   });
 
   factory BarberProfileSummary.fromJson(Map<String, dynamic> json) =>

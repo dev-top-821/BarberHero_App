@@ -18,6 +18,9 @@ class ApiConfig {
   );
 
   static const development = ApiConfig(
-    baseUrl: 'http://10.0.2.2:3000/api/v1', // Android emulator localhost
+    baseUrl: 'http://10.0.2.2:3000/api/v1',
   );
+
+  /// Create a config from a custom base URL (e.g., from .env).
+  factory ApiConfig.fromUrl(String baseUrl) => ApiConfig(baseUrl: baseUrl);
 }

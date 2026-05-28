@@ -10,6 +10,7 @@ import 'package:shared_models/shared_models.dart';
 import '../config/theme.dart';
 import '../providers/auth_provider.dart';
 import '../services/photo_uploader.dart';
+import 'legal_document_screen.dart';
 
 const int _minPortfolio = 2;
 const int _maxPortfolio = 6;
@@ -40,6 +41,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   late final PhotoUploader _uploader;
   final _picker = ImagePicker();
   final _bioController = TextEditingController();
+  final _experienceController = TextEditingController();
   final _postcodeController = TextEditingController();
 
   bool _loading = true;
@@ -61,6 +63,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   bool _uploadingProfile = false;
   bool _uploadingPortfolio = false;
+  // T&C / Privacy must be accepted before an application can be
+  // submitted (client request). Re-shown each session — submitting
+  // re-records a fresh consent server-side (idempotent).
+  bool _termsAccepted = false;
 
   bool get _isEditMode =>
       _status == 'APPROVED' || _status == 'PENDING' || _status == 'BLOCKED';
@@ -78,6 +84,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   void dispose() {
     _bioController.dispose();
+    _experienceController.dispose();
     _postcodeController.dispose();
     super.dispose();
   }
@@ -99,6 +106,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           .toList();
       _services = profile.services ?? [];
       _bioController.text = profile.bio ?? '';
+      _experienceController.text = profile.experience ?? '';
       _postcodeController.text = profile.postcode ?? '';
 
       // Settings — use existing values or safe defaults.
@@ -179,6 +187,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Future<void> _saveBioQuiet() async {
     try {
       await _api.updateBarberProfile({'bio': _bioController.text.trim()});
+    } catch (_) {}
+  }
+
+  // Years of experience — persist on blur. Only save a valid whole
+  // number (>= 1); the server re-validates on submit.
+  Future<void> _saveExperienceQuiet() async {
+    final years = int.tryParse(_experienceController.text.trim());
+    if (years == null || years < 1) return;
+    try {
+      await _api.updateBarberProfile({'experience': years.toString()});
     } catch (_) {}
   }
 
@@ -263,8 +281,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     if (_photos.length < _minPortfolio) return false;
     final bio = _bioController.text.trim();
     if (bio.length < _minBio || bio.length > _maxBio) return false;
+    final years = int.tryParse(_experienceController.text.trim());
+    if (years == null || years < 1) return false;
     if (_services.isEmpty) return false;
+    if (kLegalEnabled && !_termsAccepted) return false;
     return true;
+  }
+
+  void _openLegal(String title, String assetPath) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => LegalDocumentScreen(title: title, assetPath: assetPath),
+      ),
+    );
   }
 
   Future<void> _submit() async {
@@ -277,10 +307,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       _error = null;
     });
 
-    // Persist the latest bio text before asking the server to validate.
+    // Persist the latest bio + experience text before asking the server
+    // to validate (the fields may not have been blurred yet).
     await _saveBioQuiet();
+    await _saveExperienceQuiet();
 
     try {
+      // Record T&C / Privacy acceptance before the server re-validates
+      // (submit-for-review rejects with `terms` missing otherwise).
+      // Skipped while the feature is dormant (placeholder legal text).
+      if (kLegalEnabled) await _api.acceptBarberTerms();
       await _api.submitForReview();
       // Refresh user so AuthProvider picks up status=PENDING before the
       // next splash-equivalent check.
@@ -415,6 +451,28 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
                   const SizedBox(height: 24),
 
+                  // ── Years of experience ──
+                  const _SectionHeader(
+                    title: 'Years of Experience',
+                    hint: 'How long have you been barbering? Minimum 1 year.',
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: _experienceController,
+                    keyboardType: TextInputType.number,
+                    // Rebuild so the Submit button enables/disables as the
+                    // value becomes valid.
+                    onChanged: (_) => setState(() {}),
+                    onEditingComplete: _saveExperienceQuiet,
+                    onTapOutside: (_) => _saveExperienceQuiet(),
+                    decoration: const InputDecoration(
+                      hintText: 'e.g. 5',
+                      suffixText: 'years',
+                      prefixIcon: Icon(Icons.workspace_premium_outlined),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
                   // ── Postcode ──
                   const _SectionHeader(
                     title: 'Postcode',
@@ -462,6 +520,72 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     onSave: _saveSettings,
                   ),
                   const SizedBox(height: 24),
+
+                  // ── Terms & Conditions / Privacy consent (required to
+                  // submit — placed under Minimum booking notice as the
+                  // client requested; hidden while the feature is dormant) ──
+                  if (kLegalEnabled) ...[
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: Checkbox(
+                          value: _termsAccepted,
+                          onChanged: (v) =>
+                              setState(() => _termsAccepted = v ?? false),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 3),
+                          child: Wrap(
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              const Text('I accept the ',
+                                  style: TextStyle(fontSize: 13)),
+                              GestureDetector(
+                                onTap: () => _openLegal(
+                                  'Terms & Conditions',
+                                  kAssetTermsAndConditions,
+                                ),
+                                child: const Text(
+                                  'Terms & Conditions',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.w600,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
+                              ),
+                              const Text(' and ',
+                                  style: TextStyle(fontSize: 13)),
+                              GestureDetector(
+                                onTap: () => _openLegal(
+                                  'Privacy Policy',
+                                  kAssetPrivacyPolicy,
+                                ),
+                                child: const Text(
+                                  'Privacy Policy',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.w600,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  ],
                 ],
               ),
             ),
@@ -734,16 +858,11 @@ class _ProfilePhotoPicker extends StatelessWidget {
             Container(
               width: 120,
               height: 120,
+              clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 color: AppColors.surface,
                 shape: BoxShape.circle,
                 border: Border.all(color: AppColors.border, width: 1.5),
-                image: url != null
-                    ? DecorationImage(
-                        image: CachedNetworkImageProvider(url!),
-                        fit: BoxFit.cover,
-                      )
-                    : null,
               ),
               child: url == null
                   ? const Icon(
@@ -751,7 +870,26 @@ class _ProfilePhotoPicker extends StatelessWidget {
                       size: 40,
                       color: AppColors.textSecondary,
                     )
-                  : null,
+                  : CachedNetworkImage(
+                      imageUrl: url!,
+                      width: 120,
+                      height: 120,
+                      fit: BoxFit.cover,
+                      placeholder: (_, __) => const Center(
+                        child: SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      ),
+                      errorWidget: (_, __, ___) => const Center(
+                        child: Icon(
+                          Icons.broken_image_outlined,
+                          size: 32,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
             ),
             Positioned(
               right: 0,
@@ -857,14 +995,34 @@ class _PortfolioTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        Container(
-          width: 96,
-          height: 96,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            image: DecorationImage(
-              image: CachedNetworkImageProvider(url),
-              fit: BoxFit.cover,
+        ClipRRect(
+          borderRadius: BorderRadius.circular(10),
+          child: CachedNetworkImage(
+            imageUrl: url,
+            width: 96,
+            height: 96,
+            fit: BoxFit.cover,
+            placeholder: (_, __) => Container(
+              width: 96,
+              height: 96,
+              color: AppColors.surface,
+              child: const Center(
+                child: SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
+            ),
+            errorWidget: (_, __, ___) => Container(
+              width: 96,
+              height: 96,
+              color: AppColors.surface,
+              child: const Icon(
+                Icons.broken_image_outlined,
+                size: 26,
+                color: AppColors.textSecondary,
+              ),
             ),
           ),
         ),

@@ -18,6 +18,10 @@ ChatRoom _$ChatRoomFromJson(Map<String, dynamic> json) => ChatRoom(
   lastMessage: json['lastMessage'] == null
       ? null
       : ChatMessage.fromJson(json['lastMessage'] as Map<String, dynamic>),
+  unreadCount: (json['unreadCount'] as num?)?.toInt(),
+  peerLastReadAt: json['peerLastReadAt'] == null
+      ? null
+      : DateTime.parse(json['peerLastReadAt'] as String),
   createdAt: json['createdAt'] == null
       ? null
       : DateTime.parse(json['createdAt'] as String),
@@ -29,6 +33,8 @@ Map<String, dynamic> _$ChatRoomToJson(ChatRoom instance) => <String, dynamic>{
   'customer': instance.customer,
   'barber': instance.barber,
   'lastMessage': instance.lastMessage,
+  'unreadCount': instance.unreadCount,
+  'peerLastReadAt': instance.peerLastReadAt?.toIso8601String(),
   'createdAt': instance.createdAt?.toIso8601String(),
 };
 

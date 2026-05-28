@@ -45,8 +45,11 @@ class Booking {
 class BookingCustomer {
   final String fullName;
   final String? profilePhoto;
+  // Server only returns a non-null value once the booking reaches
+  // ON_THE_WAY (see Barber_Admin/src/lib/booking-privacy.ts).
+  final String? phone;
 
-  BookingCustomer({required this.fullName, this.profilePhoto});
+  BookingCustomer({required this.fullName, this.profilePhoto, this.phone});
 
   factory BookingCustomer.fromJson(Map<String, dynamic> json) =>
       _$BookingCustomerFromJson(json);
@@ -68,8 +71,11 @@ class BookingBarber {
 class BookingBarberUser {
   final String fullName;
   final String? profilePhoto;
+  // Server only returns a non-null value once the booking reaches
+  // ON_THE_WAY (see Barber_Admin/src/lib/booking-privacy.ts).
+  final String? phone;
 
-  BookingBarberUser({required this.fullName, this.profilePhoto});
+  BookingBarberUser({required this.fullName, this.profilePhoto, this.phone});
 
   factory BookingBarberUser.fromJson(Map<String, dynamic> json) =>
       _$BookingBarberUserFromJson(json);

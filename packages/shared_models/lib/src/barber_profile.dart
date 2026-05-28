@@ -13,6 +13,8 @@ class BarberProfile {
   final double? latitude;
   final double? longitude;
   final String? address;
+  final String? postcode;
+  final String? rejectionReason;
   final BarberUser? user;
   final List<Service>? services;
   final List<BarberPhoto>? photos;
@@ -30,6 +32,8 @@ class BarberProfile {
     this.latitude,
     this.longitude,
     this.address,
+    this.postcode,
+    this.rejectionReason,
     this.user,
     this.services,
     this.photos,
@@ -111,6 +115,8 @@ class NearbyBarber {
   final String fullName;
   final String? profilePhoto;
   final bool isOnline;
+  final double? latitude;
+  final double? longitude;
   final double? distanceKm;
   final double? rating;
   final int? reviewCount;
@@ -121,6 +127,8 @@ class NearbyBarber {
     required this.fullName,
     this.profilePhoto,
     required this.isOnline,
+    this.latitude,
+    this.longitude,
     this.distanceKm,
     this.rating,
     this.reviewCount,

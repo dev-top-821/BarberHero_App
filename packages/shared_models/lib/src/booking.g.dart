@@ -54,12 +54,14 @@ BookingCustomer _$BookingCustomerFromJson(Map<String, dynamic> json) =>
     BookingCustomer(
       fullName: json['fullName'] as String,
       profilePhoto: json['profilePhoto'] as String?,
+      phone: json['phone'] as String?,
     );
 
 Map<String, dynamic> _$BookingCustomerToJson(BookingCustomer instance) =>
     <String, dynamic>{
       'fullName': instance.fullName,
       'profilePhoto': instance.profilePhoto,
+      'phone': instance.phone,
     };
 
 BookingBarber _$BookingBarberFromJson(Map<String, dynamic> json) =>
@@ -76,12 +78,14 @@ BookingBarberUser _$BookingBarberUserFromJson(Map<String, dynamic> json) =>
     BookingBarberUser(
       fullName: json['fullName'] as String,
       profilePhoto: json['profilePhoto'] as String?,
+      phone: json['phone'] as String?,
     );
 
 Map<String, dynamic> _$BookingBarberUserToJson(BookingBarberUser instance) =>
     <String, dynamic>{
       'fullName': instance.fullName,
       'profilePhoto': instance.profilePhoto,
+      'phone': instance.phone,
     };
 
 BookingService _$BookingServiceFromJson(Map<String, dynamic> json) =>

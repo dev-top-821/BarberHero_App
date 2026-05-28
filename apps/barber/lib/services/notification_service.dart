@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -72,8 +73,32 @@ class NotificationService {
       ),
     );
 
+    // iOS won't issue an FCM token until the APNS token is set. Calling
+    // getToken() too early returns null (or throws) on iOS — which is why
+    // iOS devices never registered while Android did. Wait for the APNS
+    // token first, polling briefly since it isn't ready immediately.
+    if (Platform.isIOS) {
+      var apnsToken = await _messaging.getAPNSToken();
+      var retries = 0;
+      while (apnsToken == null && retries < 5) {
+        await Future.delayed(const Duration(seconds: 1));
+        apnsToken = await _messaging.getAPNSToken();
+        retries++;
+      }
+    }
+
     // Get FCM token and register with backend
-    final token = await _messaging.getToken();
+    String? token;
+    try {
+      token = await _messaging.getToken();
+    } catch (_) {
+      // iOS can still throw if APNS isn't ready; onTokenRefresh will retry.
+      token = null;
+    }
+    // TEMP DIAGNOSTIC — remove before final release. Prints the device's
+    // real FCM token so it can be tested directly, bypassing the backend/DB.
+    // ignore: avoid_print
+    print('FCM_TOKEN_DIAG=$token');
     if (token != null) {
       try {
         await api.updateFcmToken(token);
